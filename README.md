@@ -18,27 +18,33 @@ A CLI tool to help manage Canvas LMS assignments. Syncs your courses, assignment
 
 ## Installation
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/MillerMedia/canvas-completer.git
-   cd canvas-completer
-   ```
+### Option 1: pip (Recommended)
 
-2. **Create a virtual environment** (recommended):
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+```bash
+pip install canvas-completer
+```
 
-3. **Install dependencies**:
-   ```bash
-   pip install -r requirements.txt
-   ```
+Then install the browser for authentication:
+```bash
+playwright install chromium
+```
 
-4. **Install Playwright browsers** (for Canvas authentication):
-   ```bash
-   playwright install chromium
-   ```
+### Option 2: pipx (Isolated Environment)
+
+```bash
+pipx install canvas-completer
+pipx runpip canvas-completer install playwright
+playwright install chromium
+```
+
+### Option 3: From Source
+
+```bash
+git clone https://github.com/MillerMedia/canvas-completer.git
+cd canvas-completer
+pip install -e .
+playwright install chromium
+```
 
 ## Configuration
 
@@ -54,7 +60,7 @@ Your configuration is stored in `~/.config/canvas-completer/`.
 ### Interactive Mode (Recommended)
 
 ```bash
-python main.py
+canvas-completer
 ```
 
 This launches the interactive CLI where you can:
@@ -67,21 +73,10 @@ This launches the interactive CLI where you can:
 
 ```bash
 # Sync courses and assignments
-python main.py sync
-
-# Show where data is stored
-python canvas_browser.py where
+canvas-completer sync
 
 # Clear saved session (logout)
-python main.py logout
-```
-
-### Simple Assignment Viewer
-
-For a simpler experience that just lists upcoming assignments:
-
-```bash
-python canvas_assignments.py
+canvas-completer logout
 ```
 
 ## Data Storage
@@ -125,7 +120,7 @@ For the best experience, install these AI coding assistants:
 ## Troubleshooting
 
 ### "Session expired" errors
-Run `python main.py logout` then sync again to re-authenticate.
+Run `canvas-completer logout` then sync again to re-authenticate.
 
 ### Browser doesn't open for login
 Make sure Playwright browsers are installed: `playwright install chromium`

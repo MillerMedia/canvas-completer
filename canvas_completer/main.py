@@ -18,7 +18,7 @@ from rich.status import Status
 from rich import box
 
 # Import our canvas browser module
-import canvas_browser as canvas
+from . import canvas_browser as canvas
 
 console = Console()
 
@@ -1258,7 +1258,7 @@ def get_ai_detection_display(assignment):
         return None, None, True
 
     try:
-        from ai_detector import load_cached_results, format_detection_results, needs_recheck, check_zerogpt_api, get_text_hash
+        from .ai_detector import load_cached_results, format_detection_results, needs_recheck, check_zerogpt_api, get_text_hash
 
         cached = load_cached_results(submission_dir)
 
@@ -1305,7 +1305,7 @@ def run_ai_check_background(assignment):
         return None
 
     try:
-        from ai_detector import run_detection_for_submission
+        from .ai_detector import run_detection_for_submission
         console.print("[dim]Running AI detection in background...[/dim]")
         results = run_detection_for_submission(submission_dir, force=True)
         return results
@@ -1605,7 +1605,7 @@ def show_work_menu(assignment):
 
             if check_choice == "2":
                 # Manual clipboard approach
-                from ai_detector import open_detector_with_clipboard
+                from .ai_detector import open_detector_with_clipboard
                 console.print("[dim]Copying text to clipboard and opening ZeroGPT...[/dim]")
                 result = open_detector_with_clipboard(text, "zerogpt")
                 console.print()
@@ -1620,7 +1620,7 @@ def show_work_menu(assignment):
 
             with Status("[bold cyan]Checking AI detection...[/bold cyan]", spinner="dots") as status:
                 try:
-                    from ai_detector import run_detection_for_submission
+                    from .ai_detector import run_detection_for_submission
                     results = run_detection_for_submission(submission_dir, force=True)
                 except Exception as e:
                     results = {"error": str(e)}
@@ -1666,7 +1666,7 @@ def show_work_menu(assignment):
                     if humanize_choice == "1":
                         console.print()
 
-                        from ai_detector import humanize_text, check_zerogpt_api
+                        from .ai_detector import humanize_text, check_zerogpt_api
 
                         with Status("[bold cyan]Humanizing text with Claude...[/bold cyan]", spinner="dots") as status:
                             humanize_result = humanize_text(text)

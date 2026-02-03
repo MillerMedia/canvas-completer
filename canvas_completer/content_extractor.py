@@ -415,7 +415,7 @@ def process_module_item(item, page=None, download_dir=None):
                             filename = file_data.get('filename', filename)
                     elif hasattr(page, 'get_raw'):
                         # HeadlessCanvasAPI
-                        from canvas_browser import get_canvas_url
+                        from .canvas_browser import get_canvas_url
                         canvas_url = get_canvas_url()
                         file_data = page.get(file_url.replace(canvas_url, ''))
                         download_url = file_data.get('url')
@@ -540,7 +540,7 @@ def save_module_content(module_data, course_dir):
 
 def fetch_and_process_modules(page, course_id, course_dir):
     """Fetch all modules for a course and process their content."""
-    from canvas_browser import get_canvas_url
+    from .canvas_browser import get_canvas_url
     canvas_url = get_canvas_url()
 
     print(f"  Fetching modules...")

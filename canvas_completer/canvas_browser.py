@@ -309,13 +309,13 @@ def try_headless_sync(days_ahead=14):
                             except:
                                 pass
 
-                    from content_extractor import process_module_item
+                    from .content_extractor import process_module_item
                     processed = process_module_item(item, api, course_dir / "files")
                     processed_items.append(processed)
 
                 module['items'] = processed_items
 
-                from content_extractor import save_module_content
+                from .content_extractor import save_module_content
                 save_module_content(module, course_dir)
 
             if modules:
@@ -678,7 +678,7 @@ def sync_all_data(page, days_ahead=14):
 
         # Fetch and process module content
         try:
-            from content_extractor import fetch_and_process_modules
+            from .content_extractor import fetch_and_process_modules
             modules = fetch_and_process_modules(page, course_id, course_dir)
             if modules:
                 print(f"  ✓ {len(modules)} module(s) processed")
