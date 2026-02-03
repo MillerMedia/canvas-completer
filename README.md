@@ -1,22 +1,22 @@
-# Canvas Completer
+# 🎓 Canvas Completer
 
 A CLI tool to help manage Canvas LMS assignments. Syncs your courses, assignments, and course materials locally for easy access and AI-assisted homework help.
 
-## Features
+## ✨ Features
 
-- **Course Sync**: Automatically fetches all your active courses, syllabi, and assignments
-- **Assignment Tracking**: View upcoming assignments with due dates and submission status
-- **Content Extraction**: Downloads and extracts content from PDFs, YouTube videos, Panopto recordings, and more
-- **AI Integration**: Works with Claude Code or Cursor for AI-assisted assignment help
-- **AI Detection**: Built-in AI detection checking to review written work
-- **Offline Access**: All course materials stored locally for offline reference
+- **📚 Course Sync** — Automatically fetches all your active courses, syllabi, and assignments
+- **📅 Assignment Tracking** — View upcoming assignments with due dates and submission status
+- **📄 Content Extraction** — Downloads and extracts content from PDFs, YouTube videos, Panopto recordings, and more
+- **🤖 AI Integration** — Works with Claude Code or Cursor for AI-assisted assignment help
+- **🔍 AI Detection** — Built-in AI detection checking to review written work
+- **💾 Offline Access** — All course materials stored locally for offline reference
 
-## Requirements
+## 📋 Requirements
 
 - Python 3.10+
 - A Canvas LMS account at your school
 
-## Installation
+## 🚀 Installation
 
 ### Option 1: pip (Recommended)
 
@@ -46,7 +46,7 @@ pip install -e .
 playwright install chromium
 ```
 
-## Configuration
+## ⚙️ Configuration
 
 On first run, you'll be prompted to enter your school's Canvas URL. Examples:
 - `https://canvas.instructure.com`
@@ -55,7 +55,7 @@ On first run, you'll be prompted to enter your school's Canvas URL. Examples:
 
 Your configuration is stored in `~/.config/canvas-completer/`.
 
-## Usage
+## 📖 Usage
 
 ### Interactive Mode (Recommended)
 
@@ -64,10 +64,10 @@ canvas-completer
 ```
 
 This launches the interactive CLI where you can:
-- Sync your courses
-- Browse assignments by course
-- View assignment details and rubrics
-- Open assignments in Claude Code or Cursor for AI help
+- 🔄 Sync your courses
+- 📂 Browse assignments by course
+- 📝 View assignment details and rubrics
+- 🤖 Open assignments in Claude Code or Cursor for AI help
 
 ### Quick Commands
 
@@ -79,7 +79,7 @@ canvas-completer sync
 canvas-completer logout
 ```
 
-## Data Storage
+## 📁 Data Storage
 
 All synced data is stored locally at:
 ```
@@ -103,21 +103,23 @@ All synced data is stored locally at:
                     └── content.md
 ```
 
-## Optional Tools
+## 🛠️ Optional Tools
 
 For the best experience, install these AI coding assistants:
 
-- **Claude Code** (recommended): `npm install -g @anthropic-ai/claude-code`
-- **Cursor**: Download from [cursor.com](https://cursor.com)
-- **tmux** (optional): Enables split-pane view - `brew install tmux`
+| Tool | Install | Description |
+|------|---------|-------------|
+| **Claude Code** | `npm install -g @anthropic-ai/claude-code` | Recommended for AI help |
+| **Cursor** | [cursor.com](https://cursor.com) | AI-powered code editor |
+| **tmux** | `brew install tmux` | Enables split-pane view |
 
-## Privacy & Security
+## 🔒 Privacy & Security
 
 - Your Canvas token is stored locally with restricted file permissions (600)
 - No data is sent to external servers (except Canvas and optional AI detection services)
 - Session cookies are stored locally for convenience
 
-## Troubleshooting
+## ❓ Troubleshooting
 
 ### "Session expired" errors
 Run `canvas-completer logout` then sync again to re-authenticate.
@@ -128,10 +130,16 @@ Make sure Playwright browsers are installed: `playwright install chromium`
 ### Can't find your Canvas URL
 Check the URL you use to access Canvas in your browser. It typically looks like `https://canvas.schoolname.edu` or `https://schoolname.instructure.com`.
 
-## License
+## 📄 License
 
-MIT License - See LICENSE file for details.
+MIT License — See [LICENSE](LICENSE) file for details.
 
-## Contributing
+## 🤝 Contributing
 
 Contributions welcome! Please open an issue or submit a pull request.
+
+---
+
+<p align="center">
+  <i>Made with 🦆 by <a href="https://github.com/MillerMedia">MillerMedia</a></i>
+</p>
