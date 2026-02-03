@@ -701,6 +701,14 @@ def run_sync(force_browser=False):
     console.print()
     console.print("[bold]Starting Canvas sync...[/bold]")
 
+    # Ensure Canvas URL is configured
+    if not canvas.get_canvas_url():
+        console.print()
+        canvas_url = canvas.setup_canvas_url_interactive()
+        if not canvas_url:
+            console.print("[red]Canvas URL is required.[/red]")
+            return False
+
     # Try headless sync first (no browser needed)
     if not force_browser:
         console.print("[dim]Trying headless sync with saved session...[/dim]")
@@ -732,7 +740,7 @@ def run_sync(force_browser=False):
         logged_in = canvas.check_if_logged_in(page)
 
         if not logged_in:
-            page.goto(canvas.CANVAS_BASE_URL)
+            page.goto(canvas.get_canvas_url())
             if not canvas.wait_for_canvas_login(page):
                 browser.close()
                 return False
@@ -1846,8 +1854,8 @@ def show_first_run_guide():
         "I'm your rubber duck for homework - here to help you debug\n"
         "your way through assignments!\n\n"
         "[bold]Here's how to get started:[/bold]\n\n"
-        "1. [cyan]Sync your courses[/cyan] — This will open a browser window\n"
-        "   where you'll log in to Canvas with your Northwestern SSO.\n\n"
+        "1. [cyan]Sync your courses[/cyan] — You'll enter your school's Canvas URL,\n"
+        "   then log in via your browser.\n\n"
         "2. [cyan]View your assignments[/cyan] — After syncing, you'll see all\n"
         "   your courses, syllabi, and upcoming homework.\n\n"
         "3. [cyan]Work on assignments[/cyan] — Select an assignment and open it\n"

@@ -1,0 +1,142 @@
+# Canvas Completer
+
+A CLI tool to help manage Canvas LMS assignments. Syncs your courses, assignments, and course materials locally for easy access and AI-assisted homework help.
+
+## Features
+
+- **Course Sync**: Automatically fetches all your active courses, syllabi, and assignments
+- **Assignment Tracking**: View upcoming assignments with due dates and submission status
+- **Content Extraction**: Downloads and extracts content from PDFs, YouTube videos, Panopto recordings, and more
+- **AI Integration**: Works with Claude Code or Cursor for AI-assisted assignment help
+- **AI Detection**: Built-in AI detection checking to review written work
+- **Offline Access**: All course materials stored locally for offline reference
+
+## Requirements
+
+- Python 3.10+
+- A Canvas LMS account at your school
+
+## Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/MillerMedia/canvas-completer.git
+   cd canvas-completer
+   ```
+
+2. **Create a virtual environment** (recommended):
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+3. **Install dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+4. **Install Playwright browsers** (for Canvas authentication):
+   ```bash
+   playwright install chromium
+   ```
+
+## Configuration
+
+On first run, you'll be prompted to enter your school's Canvas URL. Examples:
+- `https://canvas.instructure.com`
+- `https://canvas.university.edu`
+- `https://school.instructure.com`
+
+Your configuration is stored in `~/.config/canvas-completer/`.
+
+## Usage
+
+### Interactive Mode (Recommended)
+
+```bash
+python main.py
+```
+
+This launches the interactive CLI where you can:
+- Sync your courses
+- Browse assignments by course
+- View assignment details and rubrics
+- Open assignments in Claude Code or Cursor for AI help
+
+### Quick Commands
+
+```bash
+# Sync courses and assignments
+python main.py sync
+
+# Show where data is stored
+python canvas_browser.py where
+
+# Clear saved session (logout)
+python main.py logout
+```
+
+### Simple Assignment Viewer
+
+For a simpler experience that just lists upcoming assignments:
+
+```bash
+python canvas_assignments.py
+```
+
+## Data Storage
+
+All synced data is stored locally at:
+```
+~/.config/canvas-completer/
+├── config.json          # Your Canvas URL and token
+├── session.json         # Browser session (for SSO login)
+├── settings.json        # User preferences
+└── data/
+    └── courses/
+        └── Course_Name/
+            ├── course_info.json
+            ├── syllabus.md
+            ├── assignments/
+            │   └── Assignment_Name/
+            │       ├── assignment.json
+            │       ├── requirements.md
+            │       ├── rubric.md
+            │       └── submission/
+            └── modules/
+                └── Module_Name/
+                    └── content.md
+```
+
+## Optional Tools
+
+For the best experience, install these AI coding assistants:
+
+- **Claude Code** (recommended): `npm install -g @anthropic-ai/claude-code`
+- **Cursor**: Download from [cursor.com](https://cursor.com)
+- **tmux** (optional): Enables split-pane view - `brew install tmux`
+
+## Privacy & Security
+
+- Your Canvas token is stored locally with restricted file permissions (600)
+- No data is sent to external servers (except Canvas and optional AI detection services)
+- Session cookies are stored locally for convenience
+
+## Troubleshooting
+
+### "Session expired" errors
+Run `python main.py logout` then sync again to re-authenticate.
+
+### Browser doesn't open for login
+Make sure Playwright browsers are installed: `playwright install chromium`
+
+### Can't find your Canvas URL
+Check the URL you use to access Canvas in your browser. It typically looks like `https://canvas.schoolname.edu` or `https://schoolname.instructure.com`.
+
+## License
+
+MIT License - See LICENSE file for details.
+
+## Contributing
+
+Contributions welcome! Please open an issue or submit a pull request.

@@ -15,10 +15,90 @@ from html import unescape
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeout
 
 # Configuration
-CANVAS_BASE_URL = "https://canvas.northwestern.edu"
 CONFIG_DIR = Path.home() / ".config" / "canvas-completer"
 SESSION_FILE = CONFIG_DIR / "session.json"
 DATA_DIR = CONFIG_DIR / "data" / "courses"
+SETTINGS_FILE = CONFIG_DIR / "settings.json"
+
+def get_canvas_url():
+    """Get Canvas URL from settings."""
+    if SETTINGS_FILE.exists():
+        try:
+            with open(SETTINGS_FILE) as f:
+                settings = json.load(f)
+            return settings.get("canvas_url")
+        except:
+            pass
+    # Fallback to old config location
+    config_file = CONFIG_DIR / "config.json"
+    if config_file.exists():
+        try:
+            with open(config_file) as f:
+                config = json.load(f)
+            return config.get("canvas_url")
+        except:
+            pass
+    return None
+
+def save_canvas_url(url):
+    """Save Canvas URL to settings."""
+    CONFIG_DIR.mkdir(parents=True, exist_ok=True)
+    settings = {}
+    if SETTINGS_FILE.exists():
+        try:
+            with open(SETTINGS_FILE) as f:
+                settings = json.load(f)
+        except:
+            pass
+    settings["canvas_url"] = url
+    with open(SETTINGS_FILE, "w") as f:
+        json.dump(settings, f, indent=2)
+
+def setup_canvas_url_interactive():
+    """Prompt user for Canvas URL if not configured."""
+    canvas_url = get_canvas_url()
+    if canvas_url:
+        return canvas_url
+
+    print("\n" + "=" * 60)
+    print("Canvas Instance Setup")
+    print("=" * 60)
+    print("""
+Please enter your school's Canvas URL.
+
+Examples:
+  - https://canvas.instructure.com
+  - https://canvas.university.edu
+  - https://school.instructure.com
+""")
+
+    while True:
+        url = input("Canvas URL: ").strip()
+
+        if not url.startswith("http"):
+            url = "https://" + url
+        url = url.rstrip("/")
+
+        if not url or "." not in url:
+            print("Please enter a valid URL.")
+            continue
+
+        print(f"\nUsing: {url}")
+        confirm = input("Is this correct? (y/n): ").strip().lower()
+        if confirm in ("y", "yes", ""):
+            save_canvas_url(url)
+            return url
+        print()
+
+# Get CANVAS_BASE_URL dynamically (for backwards compatibility with imports)
+def _get_base_url():
+    url = get_canvas_url()
+    if not url:
+        raise RuntimeError("Canvas URL not configured. Run the setup first.")
+    return url
+
+# This will be populated at runtime
+CANVAS_BASE_URL = None
 
 
 def save_session(context):
@@ -53,6 +133,7 @@ class HeadlessCanvasAPI:
     def __init__(self):
         self.session = requests.Session()
         self.authenticated = False
+        self.canvas_url = get_canvas_url()
         self._load_cookies()
 
     def _load_cookies(self):
@@ -80,9 +161,11 @@ class HeadlessCanvasAPI:
 
     def verify_auth(self):
         """Verify the session is still valid."""
+        if not self.canvas_url:
+            return None
         try:
             response = self.session.get(
-                f"{CANVAS_BASE_URL}/api/v1/users/self",
+                f"{self.canvas_url}/api/v1/users/self",
                 timeout=10
             )
             if response.ok:
@@ -94,7 +177,9 @@ class HeadlessCanvasAPI:
 
     def get(self, endpoint):
         """Make a GET request to Canvas API."""
-        url = f"{CANVAS_BASE_URL}{endpoint}"
+        if not self.canvas_url:
+            raise RuntimeError("Canvas URL not configured")
+        url = f"{self.canvas_url}{endpoint}"
         response = self.session.get(url, timeout=30)
         response.raise_for_status()
         return response.json()
@@ -108,6 +193,10 @@ class HeadlessCanvasAPI:
 
 def try_headless_sync(days_ahead=14):
     """Try to sync without opening browser. Returns None if auth fails."""
+    canvas_url = get_canvas_url()
+    if not canvas_url:
+        return None  # URL not configured
+
     api = HeadlessCanvasAPI()
 
     user = api.verify_auth()
@@ -205,7 +294,7 @@ def try_headless_sync(days_ahead=14):
                         page_url = item.get('url')
                         if page_url:
                             try:
-                                page_data = api.get(page_url.replace(CANVAS_BASE_URL, ''))
+                                page_data = api.get(page_url.replace(api.canvas_url, ''))
                                 item['body'] = page_data.get('body', '')
                             except:
                                 pass
@@ -214,7 +303,7 @@ def try_headless_sync(days_ahead=14):
                         file_url = item.get('url')
                         if file_url:
                             try:
-                                file_data = api.get(file_url.replace(CANVAS_BASE_URL, ''))
+                                file_data = api.get(file_url.replace(api.canvas_url, ''))
                                 item['download_url'] = file_data.get('url')
                                 item['filename'] = file_data.get('filename')
                             except:
@@ -307,12 +396,14 @@ def html_to_markdown(html):
 
 def wait_for_canvas_login(page, timeout_minutes=5):
     """Wait for user to complete SSO login and reach Canvas dashboard."""
+    canvas_url = get_canvas_url()
+
     print("\n" + "=" * 60)
     print("Canvas Login Required")
     print("=" * 60)
     print("""
 A browser window has opened. Please:
-  1. Complete the Northwestern SSO login
+  1. Complete your school's SSO login
   2. Handle any 2FA prompts
   3. Wait until you see your Canvas dashboard
 
@@ -321,7 +412,7 @@ The script will automatically continue once you're logged in.
     print(f"Waiting up to {timeout_minutes} minutes for login...")
 
     try:
-        page.wait_for_url(f"{CANVAS_BASE_URL}/**", timeout=timeout_minutes * 60 * 1000)
+        page.wait_for_url(f"{canvas_url}/**", timeout=timeout_minutes * 60 * 1000)
         page.wait_for_selector(
             "#dashboard, .ic-Dashboard-header, .dashboard-header",
             timeout=30000
@@ -335,11 +426,15 @@ The script will automatically continue once you're logged in.
 
 def check_if_logged_in(page):
     """Check if we're already logged into Canvas."""
+    canvas_url = get_canvas_url()
+    if not canvas_url:
+        return False
+
     try:
-        page.goto(CANVAS_BASE_URL, timeout=15000)
+        page.goto(canvas_url, timeout=15000)
         page.wait_for_load_state("networkidle", timeout=10000)
 
-        if CANVAS_BASE_URL in page.url:
+        if canvas_url in page.url:
             dashboard = page.query_selector("#dashboard, .ic-Dashboard-header, .dashboard-header")
             if dashboard:
                 return True
@@ -350,7 +445,8 @@ def check_if_logged_in(page):
 
 def fetch_user_info(page):
     """Get current user info."""
-    response = page.request.get(f"{CANVAS_BASE_URL}/api/v1/users/self")
+    canvas_url = get_canvas_url()
+    response = page.request.get(f"{canvas_url}/api/v1/users/self")
     if response.ok:
         return response.json()
     return None
@@ -358,8 +454,9 @@ def fetch_user_info(page):
 
 def fetch_courses(page):
     """Get all active courses."""
+    canvas_url = get_canvas_url()
     response = page.request.get(
-        f"{CANVAS_BASE_URL}/api/v1/courses?enrollment_state=active&per_page=50&include[]=syllabus_body&include[]=term"
+        f"{canvas_url}/api/v1/courses?enrollment_state=active&per_page=50&include[]=syllabus_body&include[]=term"
     )
     if response.ok:
         return response.json()
@@ -368,8 +465,9 @@ def fetch_courses(page):
 
 def fetch_assignment_details(page, course_id, assignment_id):
     """Fetch full assignment details including rubric."""
+    canvas_url = get_canvas_url()
     response = page.request.get(
-        f"{CANVAS_BASE_URL}/api/v1/courses/{course_id}/assignments/{assignment_id}?include[]=rubric&include[]=submission"
+        f"{canvas_url}/api/v1/courses/{course_id}/assignments/{assignment_id}?include[]=rubric&include[]=submission"
     )
     if response.ok:
         return response.json()
@@ -378,8 +476,9 @@ def fetch_assignment_details(page, course_id, assignment_id):
 
 def fetch_course_modules(page, course_id):
     """Fetch course modules and items."""
+    canvas_url = get_canvas_url()
     response = page.request.get(
-        f"{CANVAS_BASE_URL}/api/v1/courses/{course_id}/modules?include[]=items&per_page=50"
+        f"{canvas_url}/api/v1/courses/{course_id}/modules?include[]=items&per_page=50"
     )
     if response.ok:
         return response.json()
@@ -536,8 +635,9 @@ def sync_all_data(page, days_ahead=14):
             print(f"  - No syllabus found")
 
         # Fetch assignments
+        canvas_url = get_canvas_url()
         response = page.request.get(
-            f"{CANVAS_BASE_URL}/api/v1/courses/{course_id}/assignments?per_page=100&include[]=rubric&include[]=submission"
+            f"{canvas_url}/api/v1/courses/{course_id}/assignments?per_page=100&include[]=rubric&include[]=submission"
         )
 
         if not response.ok:
@@ -658,6 +758,12 @@ def main():
 
     do_full_sync = len(sys.argv) > 1 and sys.argv[1] == "sync"
 
+    # Ensure Canvas URL is configured
+    canvas_url = setup_canvas_url_interactive()
+    if not canvas_url:
+        print("Canvas URL is required. Exiting.")
+        return 1
+
     print("Starting Canvas browser automation...\n")
 
     with sync_playwright() as p:
@@ -678,7 +784,8 @@ def main():
         logged_in = check_if_logged_in(page)
 
         if not logged_in:
-            page.goto(CANVAS_BASE_URL)
+            canvas_url = get_canvas_url()
+            page.goto(canvas_url)
             if not wait_for_canvas_login(page):
                 browser.close()
                 return 1
@@ -704,12 +811,13 @@ def main():
             cutoff = now + timedelta(days=7)
             all_assignments = []
 
+            canvas_url = get_canvas_url()
             for course in courses:
                 course_id = course.get("id")
                 course_name = course.get("name", "Unknown Course")
 
                 response = page.request.get(
-                    f"{CANVAS_BASE_URL}/api/v1/courses/{course_id}/assignments?per_page=100&bucket=upcoming"
+                    f"{canvas_url}/api/v1/courses/{course_id}/assignments?per_page=100&bucket=upcoming"
                 )
 
                 if not response.ok:
